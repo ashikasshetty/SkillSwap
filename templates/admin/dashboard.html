@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Dashboard | SkillSwap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <div class="level-badge level-expert" style="margin-bottom: 0.5rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <i class="fas fa-shield"></i> MCA Administrator Portal
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800;">Platform Analytics &amp; Control</h1>
+      <p style="color: var(--body-text); font-size: 0.95rem;">System metrics, user moderation, and interactive visualizations</p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{{ url_for('admin.users') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-users-gear"></i> Manage Users
+      </a>
+      <a href="{{ url_for('admin.categories') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-tags"></i> Manage Categories
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="admin-grid">
+    <div class="admin-card">
+      <div class="admin-card-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--heading-color);">{{ stats.total_users }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Registered Users</div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-icon">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--heading-color);">{{ stats.total_offered + stats.total_wanted }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Total Skill Entries</div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-icon">
+        <i class="fas fa-handshake"></i>
+      </div>
+      <div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--heading-color);">{{ stats.total_swaps }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Total Swap Proposals</div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-icon">
+        <i class="fas fa-circle-check"></i>
+      </div>
+      <div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--heading-color);">{{ stats.completed_swaps }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Completed Exchanges</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Visualizations Row (Chart.js) -->
+  <div class="charts-row">
+    <!-- Chart 1: Categories Offered vs Wanted -->
+    <div class="chart-container">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-chart-bar"></i> Skills Distribution by Category
+      </h3>
+      <div style="height: 250px;">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: Swap Status Doughnut -->
+    <div class="chart-container">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-chart-pie"></i> Swap Lifecycle Status
+      </h3>
+      <div style="height: 250px;">
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activities Tables -->
+  <div class="grid-2-col" style="gap: 1.5rem;">
+    <!-- Recent Users -->
+    <div class="data-table-wrapper">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--heading-color);">Recent User Registrations</h4>
+        <a href="{{ url_for('admin.users') }}" style="font-size: 0.85rem; color: var(--champagne-gold); font-weight: 600;">View all</a>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in recent_users %}
+            <tr>
+              <td>
+                <div style="font-weight: 600; color: var(--heading-color);">{{ u.full_name }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ u.email }}</div>
+              </td>
+              <td><span class="level-badge level-intermediate">{{ u.role }}</span></td>
+              <td>
+                <span class="status-dot {% if u.is_active %}status-active{% else %}status-inactive{% endif %}"></span>
+                <span style="font-size: 0.85rem;">{{ 'Active' if u.is_active else 'Disabled' }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Recent Swap Requests -->
+    <div class="data-table-wrapper">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--heading-color);">Recent Swap Activities</h4>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Latest {{ recent_swaps|length }}</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Parties</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in recent_swaps %}
+            <tr>
+              <td>
+                <div style="font-weight: 600; color: var(--heading-color);">{{ s.sender.full_name }} &rarr; {{ s.receiver.full_name }}</div>
+              </td>
+              <td>
+                <span class="level-badge {% if s.status == 'accepted' %}level-intermediate{% elif s.status == 'completed' %}level-beginner{% else %}level-advanced{% endif %}">
+                  {{ s.status|capitalize }}
+                </span>
+              </td>
+              <td style="font-size: 0.82rem; color: var(--text-muted);">
+                {{ s.created_at.strftime('%b %d') }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin_charts.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard &amp; Swap Hub | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <div class="section-pill" style="margin-bottom: 0.5rem;">Dashboard</div>
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;">Skill Swap Hub</h1>
+    <p style="color: var(--body-text); font-size: 1.02rem; margin-top: 0.35rem;">
+      Track and manage your swap proposals, active learning partnerships, and session history
+    </p>
+  </div>
+
+  <div class="tabs-wrapper">
+    <div class="nav-tabs">
+      <button type="button" class="tab-btn active" data-target="incomingTab">
+        <i class="fas fa-inbox"></i> Incoming Proposals ({{ incoming_pending|length }})
+      </button>
+      <button type="button" class="tab-btn" data-target="activeTab">
+        <i class="fas fa-bolt"></i> Active Exchanges ({{ active_swaps|length }})
+      </button>
+      <button type="button" class="tab-btn" data-target="outgoingTab">
+        <i class="fas fa-paper-plane"></i> Outgoing Sent ({{ outgoing_pending|length }})
+      </button>
+      <button type="button" class="tab-btn" data-target="historyTab">
+        <i class="fas fa-clock-rotate-left"></i> History &amp; Completed ({{ history_swaps|length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: INCOMING PROPOSALS -->
+    <div id="incomingTab" class="tab-pane">
+      {% if incoming_pending %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for swap in incoming_pending %}
+            <div class="card card-hover" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; padding: clamp(1.25rem, 3vw, 1.75rem);">
+              <div style="flex: 1; min-width: min(100%, 260px);">
+                <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1rem;">
+                  <div class="avatar-mini" style="width: 40px; height: 40px; font-size: 1.05rem;">
+                    {{ swap.sender.full_name[0] }}
+                  </div>
+                  <div>
+                    <a href="{{ url_for('auth.user_detail', user_id=swap.sender.id) }}" style="font-weight: 700; color: var(--heading-color); font-size: 1.1rem; text-decoration: none;">
+                      {{ swap.sender.full_name }}
+                    </a>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                      Sent on {{ swap.created_at.strftime('%b %d, %Y') }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="message-quote">
+                  <div style="font-size: 0.88rem; margin-bottom: 0.45rem;">
+                    <strong style="color: var(--heading-color);">They offer to teach:</strong> 
+                    <span class="skill-tag skill-tag-teach" style="margin-left: 0.4rem;">
+                      {{ swap.offered_skill.skill_name if swap.offered_skill else 'General Mentorship' }}
+                    </span>
+                  </div>
+                  {% if swap.requested_skill %}
+                    <div style="font-size: 0.88rem; margin-bottom: 0.45rem;">
+                      <strong style="color: var(--heading-color);">They want to learn:</strong> 
+                      <span class="skill-tag skill-tag-learn" style="margin-left: 0.4rem;">
+                        {{ swap.requested_skill.skill_name }}
+                      </span>
+                    </div>
+                  {% endif %}
+                  <p style="font-size: 0.92rem; color: var(--body-text); font-style: italic; margin-top: 0.65rem; line-height: 1.6;">
+                    "{{ swap.message }}"
+                  </p>
+                  {% if swap.schedule_note %}
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.5rem;">
+                      <i class="fas fa-calendar" style="color: var(--champagne-gold);"></i> Proposed Schedule: {{ swap.schedule_note }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="swap-action-buttons">
+                <form method="POST" action="{{ url_for('swaps.accept_request', swap_id=swap.id) }}">
+                  <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">
+                    <i class="fas fa-check"></i> Accept Swap
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('swaps.reject_request', swap_id=swap.id) }}" onsubmit="return confirm('Decline this proposal?');">
+                  <button type="submit" class="btn btn-outline btn-sm" style="color: #EF4444; width: 100%;">
+                    <i class="fas fa-xmark"></i> Decline
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+          <i class="fas fa-inbox" style="font-size: 2.75rem; margin-bottom: 1.25rem; color: var(--text-muted);"></i>
+          <h3 style="font-size: 1.35rem; color: var(--heading-color); margin-bottom: 0.5rem;">No Pending Incoming Proposals</h3>
+          <p>When fellow students request to swap skills with you, they will appear right here.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 2: ACTIVE IN-PROGRESS SWAPS -->
+    <div id="activeTab" class="tab-pane" style="display: none;">
+      {% if active_swaps %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for swap in active_swaps %}
+            {% set partner = swap.receiver if swap.sender_id == g.user.id else swap.sender %}
+            <div class="card card-hover" style="border-left: 3px solid var(--champagne-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; padding: 1.75rem;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.75rem;">
+                  <div class="avatar-mini" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                    {{ partner.full_name[0] }}
+                  </div>
+                  <div>
+                    <a href="{{ url_for('auth.user_detail', user_id=partner.id) }}" style="font-weight: 700; color: var(--heading-color); font-size: 1.15rem; text-decoration: none;">
+                      {{ partner.full_name }}
+                    </a>
+                    <span class="level-badge level-intermediate" style="margin-left: 0.5rem;">
+                      <i class="fas fa-circle-dot" style="font-size: 0.55rem;"></i> Active Exchange
+                    </span>
+                  </div>
+                </div>
+
+                <div style="font-size: 0.92rem; color: var(--body-text); margin-bottom: 0.35rem;">
+                  Exchanging: 
+                  <strong style="color: var(--heading-color);">{{ swap.offered_skill.skill_name if swap.offered_skill else 'Skill' }}</strong> &amp; 
+                  <strong style="color: var(--heading-color);">{{ swap.requested_skill.skill_name if swap.requested_skill else 'Skill' }}</strong>
+                </div>
+                {% if swap.schedule_note %}
+                  <div style="font-size: 0.82rem; color: var(--text-muted);">
+                    <i class="fas fa-clock" style="color: var(--champagne-gold);"></i> {{ swap.schedule_note }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Actions -->
+              <div class="swap-action-buttons">
+                <a href="{{ url_for('chat.chat_room', swap_id=swap.id) }}" class="btn btn-secondary btn-sm">
+                  <i class="fas fa-comments"></i> Open Chat
+                </a>
+                <form method="POST" action="{{ url_for('swaps.complete_swap', swap_id=swap.id) }}" onsubmit="return confirm('Mark this skill exchange as successfully completed?');">
+                  <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-circle-check"></i> Mark Complete
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+          <i class="fas fa-handshake-simple" style="font-size: 2.75rem; margin-bottom: 1.25rem; color: var(--text-muted);"></i>
+          <h3 style="font-size: 1.35rem; color: var(--heading-color); margin-bottom: 0.5rem;">No Active Swaps Right Now</h3>
+          <p>Propose a skill swap to get collaborative learning sessions underway!</p>
+          <a href="{{ url_for('main.matches') }}" class="btn btn-primary btn-sm" style="margin-top: 1.25rem;">
+            <i class="fas fa-wand-magic-sparkles"></i> Find Partners
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 3: OUTGOING PROPOSALS -->
+    <div id="outgoingTab" class="tab-pane" style="display: none;">
+      {% if outgoing_pending %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for swap in outgoing_pending %}
+            <div class="card card-hover" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; padding: 1.5rem;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.45rem;">
+                  <div class="avatar-mini" style="width: 36px; height: 36px;">{{ swap.receiver.full_name[0] }}</div>
+                  <div>
+                    <span style="font-weight: 700; color: var(--heading-color); font-size: 1.05rem;">To: {{ swap.receiver.full_name }}</span>
+                    <span class="level-badge level-beginner" style="margin-left: 0.5rem;">Awaiting Response</span>
+                  </div>
+                </div>
+                <p style="font-size: 0.92rem; color: var(--body-text); font-style: italic;">
+                  "{{ swap.message }}"
+                </p>
+              </div>
+
+              <form method="POST" action="{{ url_for('swaps.cancel_request', swap_id=swap.id) }}" onsubmit="return confirm('Cancel this proposal?');">
+                <button type="submit" class="btn btn-outline btn-sm" style="color: #EF4444;">
+                  <i class="fas fa-ban"></i> Cancel Request
+                </button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+          <p>You have no pending outgoing proposals.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 4: SWAP HISTORY -->
+    <div id="historyTab" class="tab-pane" style="display: none;">
+      {% if history_swaps %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          {% for swap in history_swaps %}
+            {% set partner = swap.receiver if swap.sender_id == g.user.id else swap.sender %}
+            <div class="card card-hover" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; padding: 1.5rem;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.45rem;">
+                  <div class="avatar-mini" style="width: 36px; height: 36px;">{{ partner.full_name[0] }}</div>
+                  <div>
+                    <span style="font-weight: 700; color: var(--heading-color); font-size: 1.05rem;">Partner: {{ partner.full_name }}</span>
+                    <span class="level-badge {% if swap.status == 'completed' %}level-intermediate{% else %}level-expert{% endif %}" style="margin-left: 0.5rem;">
+                      {{ swap.status|capitalize }}
+                    </span>
+                  </div>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                  Updated: {{ swap.updated_at.strftime('%b %d, %Y') }}
+                </div>
+              </div>
+
+              {% if swap.status == 'completed' %}
+                <a href="{{ url_for('reviews.add_review', swap_id=swap.id) }}" class="btn btn-warning btn-sm">
+                  <i class="fas fa-star"></i> Leave / View Review
+                </a>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+          <p>No completed or archived swap records yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

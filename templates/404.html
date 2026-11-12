@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Page Not Found | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 5rem 1rem;">
+  <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 5rem; font-weight: 800; color: var(--champagne-gold); line-height: 1;">404</div>
+  <h1 style="font-size: 2rem; margin: 1rem 0 0.5rem; color: var(--heading-color);">Skill Page Not Found</h1>
+  <p style="color: var(--body-text); max-width: 480px; margin: 0 auto 2rem; font-size: 1rem;">
+    The page you are looking for might have been moved, deleted, or does not exist.
+  </p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">
+    <i class="fas fa-house"></i> Return Home
+  </a>
+</div>
+{% endblock %}

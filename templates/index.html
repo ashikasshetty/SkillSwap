@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}SkillSwap - Modern Peer-to-Peer Collaborative Learning Platform{% endblock %}
+
+{% block content %}
+<!-- ===================================================================
+     1. HERO SECTION WITH SKILL EXCHANGE VISUAL
+     =================================================================== -->
+<section class="hero">
+  <div class="hero-badge">
+    <i class="fas fa-graduation-cap"></i>
+    <span>St Agnes College &bull; MCA Mini Project 24MCAS356</span>
+  </div>
+
+  <h1 class="hero-title">
+    The Smartest Way to <span class="text-gold-gradient">Exchange Skills</span> and Learn Together.
+  </h1>
+
+  <p class="hero-subtitle">
+    SkillSwap is a reciprocal peer-to-peer collaborative network where knowledge is the currency. Teach what you excel at, learn what you're passionate about — completely free, verified, and student-powered.
+  </p>
+
+  <div class="hero-cta">
+    {% if g.user %}
+      <a href="{{ url_for('main.matches') }}" class="btn btn-primary btn-lg" id="heroMatchesBtn">
+        <i class="fas fa-wand-magic-sparkles"></i> View My Smart Matches
+      </a>
+      <a href="{{ url_for('main.explore') }}" class="btn btn-secondary btn-lg" id="heroExploreBtn">
+        <i class="fas fa-compass"></i> Explore Skill Directory
+      </a>
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg btn-glow" id="heroJoinBtn">
+        <i class="fas fa-rocket"></i> Get Started Free
+      </a>
+      <a href="{{ url_for('main.explore') }}" class="btn btn-secondary btn-lg" id="heroExploreBtn">
+        <i class="fas fa-compass"></i> Explore Skills
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Skill-Exchange Visual Illustration -->
+  <div class="hero-visual-container">
+    <div class="exchange-diagram">
+      <!-- Student 1 -->
+      <div class="exchange-user-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem;">
+          <div class="avatar-mini">A</div>
+          <div>
+            <div style="font-weight: 700; color: var(--heading-color); font-size: 0.95rem;">Ashika Shetty</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">II MCA &bull; St Agnes</div>
+          </div>
+        </div>
+        <div style="margin-bottom: 0.6rem;">
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 0.35rem;">Teaches:</div>
+          <span class="skill-tag skill-tag-teach"><i class="fas fa-check"></i> Python &amp; Flask</span>
+        </div>
+        <div>
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 0.35rem;">Learns:</div>
+          <span class="skill-tag skill-tag-learn"><i class="fas fa-magnifying-glass"></i> UI/UX Design</span>
+        </div>
+      </div>
+
+      <!-- Reciprocal Arrows Icon -->
+      <div class="exchange-arrow-box" title="100% Reciprocal Match fit">
+        <i class="fas fa-arrow-right-arrow-left"></i>
+      </div>
+
+      <!-- Student 2 -->
+      <div class="exchange-user-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem;">
+          <div class="avatar-mini">G</div>
+          <div>
+            <div style="font-weight: 700; color: var(--heading-color); font-size: 0.95rem;">Ganavi K.H</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">II MCA &bull; St Agnes</div>
+          </div>
+        </div>
+        <div style="margin-bottom: 0.6rem;">
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 0.35rem;">Teaches:</div>
+          <span class="skill-tag skill-tag-teach"><i class="fas fa-check"></i> UI/UX Design</span>
+        </div>
+        <div>
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 0.35rem;">Learns:</div>
+          <span class="skill-tag skill-tag-learn"><i class="fas fa-magnifying-glass"></i> Python &amp; Flask</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     2. PLATFORM METRICS / STATS RIBBON
+     =================================================================== -->
+<section class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.users_count }}</div>
+    <div class="stat-label"><i class="fas fa-users"></i> Active Learners</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.skills_offered_count }}</div>
+    <div class="stat-label"><i class="fas fa-chalkboard-user"></i> Skills Offered</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.skills_wanted_count }}</div>
+    <div class="stat-label"><i class="fas fa-book-open-reader"></i> Skills Requested</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.completed_swaps_count }}</div>
+    <div class="stat-label"><i class="fas fa-circle-check"></i> Successful Swaps</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     3. FEATURED SKILLS SHOWCASE
+     =================================================================== -->
+<section style="margin: 4.5rem 0;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="section-pill">Live Directory</span>
+      <h2 class="section-title">Recently Offered Skills</h2>
+      <p style="color: var(--body-text); font-size: 0.98rem;">Connect with peers ready to coach and mentor today</p>
+    </div>
+    <a href="{{ url_for('main.explore') }}" class="btn btn-secondary btn-sm">
+      View All Skills <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    {% for skill in recent_skills %}
+      <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">
+              <i class="fas {{ skill.category.icon }}" style="color: var(--champagne-gold);"></i> {{ skill.category.name }}
+            </span>
+            <span class="level-badge level-{{ skill.proficiency|lower }}">{{ skill.proficiency }}</span>
+          </div>
+
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading-color);">
+            {{ skill.skill_name }}
+          </h3>
+
+          <p style="font-size: 0.9rem; color: var(--body-text); margin-bottom: 1.25rem; line-height: 1.6;">
+            {{ skill.description or 'Ready to collaborate and share practical knowledge with peers.' }}
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <a href="{{ url_for('auth.user_detail', user_id=skill.user.id) }}" style="display: flex; align-items: center; gap: 0.6rem; text-decoration: none;">
+            <div class="avatar-mini" style="width: 28px; height: 28px; font-size: 0.78rem;">{{ skill.user.full_name[0] }}</div>
+            <span style="font-weight: 600; font-size: 0.88rem; color: var(--heading-color);">{{ skill.user.full_name }}</span>
+          </a>
+
+          <a href="{{ url_for('main.explore', q=skill.skill_name) }}" class="btn btn-outline btn-sm">
+            View <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ===================================================================
+     4. HOW SKILLSWAP WORKS (4 Steps)
+     =================================================================== -->
+<section style="margin: 5rem 0;">
+  <div class="section-header">
+    <span class="section-pill">Step-by-Step</span>
+    <h2 class="section-title">How SkillSwap Works</h2>
+    <p class="section-subtitle">
+      A completely reciprocal learning ecosystem built to make peer education effortless, structured, and mutually beneficial.
+    </p>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num-badge">1</div>
+      <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+      <h3 class="step-title">Build Your Profile</h3>
+      <p class="step-desc">
+        List the skills you can confidently teach with your proficiency level, and note what you want to learn.
+      </p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num-badge">2</div>
+      <div class="step-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+      <h3 class="step-title">Get Mutual Matches</h3>
+      <p class="step-desc">
+        Our reciprocal engine pairs you with peers whose learning goals and teaching skills match yours 100%.
+      </p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num-badge">3</div>
+      <div class="step-icon"><i class="fas fa-comments"></i></div>
+      <h3 class="step-title">Coordinate &amp; Learn</h3>
+      <p class="step-desc">
+        Propose a swap, coordinate schedules in real-time chat, and hold interactive peer-learning sessions.
+      </p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num-badge">4</div>
+      <div class="step-icon"><i class="fas fa-star"></i></div>
+      <h3 class="step-title">Rate &amp; Build Trust</h3>
+      <p class="step-desc">
+        Mark swaps complete, write reviews, and build a verified reputation as an outstanding peer mentor.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     5. POPULAR CATEGORIES
+     =================================================================== -->
+<section style="margin: 5rem 0;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.25rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="section-pill">Browse Topics</span>
+      <h2 class="section-title">Popular Skill Categories</h2>
+      <p style="color: var(--body-text); font-size: 0.98rem;">Explore technology stacks, creative media, and academic disciplines</p>
+    </div>
+    <a href="{{ url_for('main.explore') }}" class="btn btn-secondary btn-sm">
+      All Categories <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+    {% for cat in categories %}
+      <a href="{{ url_for('main.explore', category=cat.id) }}" class="category-card">
+        <div class="category-icon">
+          <i class="fas {{ cat.icon }}"></i>
+        </div>
+        <div>
+          <div class="category-name">{{ cat.name }}</div>
+          <div class="category-count">{{ cat.skills_offered.count() }} skills available</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ===================================================================
+     6. WHY CHOOSE SKILLSWAP (4 Core Pillars)
+     =================================================================== -->
+<section style="margin: 5rem 0;">
+  <div class="section-header">
+    <span class="section-pill">Why SkillSwap</span>
+    <h2 class="section-title">Built for Real Collaborative Learning</h2>
+    <p class="section-subtitle">
+      Designed to eliminate the barriers of traditional online courses through accountable peer learning.
+    </p>
+  </div>
+
+  <div class="value-props-grid">
+    <div class="value-card">
+      <div class="value-icon"><i class="fas fa-repeat"></i></div>
+      <h3 class="value-title">100% Reciprocal &amp; Free</h3>
+      <p class="value-desc">
+        No subscription fees or course paywalls. You exchange your own knowledge for knowledge you need.
+      </p>
+    </div>
+
+    <div class="value-card">
+      <div class="value-icon"><i class="fas fa-user-shield"></i></div>
+      <h3 class="value-title">Verified Student Network</h3>
+      <p class="value-desc">
+        Connect with dedicated peers from accredited MCA and computer science institutions.
+      </p>
+    </div>
+
+    <div class="value-card">
+      <div class="value-icon"><i class="fas fa-message"></i></div>
+      <h3 class="value-title">Direct Chat &amp; Scheduling</h3>
+      <p class="value-desc">
+        Built-in real-time messaging lets you plan sessions, share study materials, and meet seamlessly.
+      </p>
+    </div>
+
+    <div class="value-card">
+      <div class="value-icon"><i class="fas fa-award"></i></div>
+      <h3 class="value-title">Verified Portfolio &amp; Reviews</h3>
+      <p class="value-desc">
+        Earn genuine 5-star student testimonials and ratings to showcase on your academic profile.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     7. TESTIMONIALS & REVIEWS SHOWCASE
+     =================================================================== -->
+{% if reviews %}
+<section style="margin: 5rem 0;">
+  <div class="section-header">
+    <span class="section-pill">Student Reviews</span>
+    <h2 class="section-title">Loved by Active Learners</h2>
+    <p class="section-subtitle">See what students say about their collaborative peer exchanges</p>
+  </div>
+
+  <div class="testimonials-grid">
+    {% for r in reviews %}
+      <div class="testimonial-card">
+        <div>
+          <div class="rating-stars" style="margin-bottom: 0.85rem;">
+            {% for _ in range(r.rating) %}
+              <i class="fas fa-star"></i>
+            {% endfor %}
+          </div>
+          <p class="testimonial-quote">"{{ r.comment }}"</p>
+        </div>
+
+        <div class="testimonial-author">
+          <div class="avatar-mini" style="width: 32px; height: 32px;">
+            {{ r.reviewer.full_name[0] }}
+          </div>
+          <div>
+            <div style="font-weight: 700; color: var(--heading-color); font-size: 0.92rem;">{{ r.reviewer.full_name }}</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Reviewed {{ r.reviewee.full_name }} &bull; {{ r.created_at.strftime('%b %Y') }}</div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================================================================
+     8. BOTTOM CALL-TO-ACTION BANNER
+     =================================================================== -->
+<section style="margin: 5rem 0 3rem;">
+  <div class="card" style="text-align: center; padding: 4rem 2rem; background: var(--bg-surface-alt); border-color: var(--champagne-gold-border);">
+    <span class="section-pill" style="margin-bottom: 1rem;">Join the Community</span>
+    <h2 style="font-size: 2.2rem; margin-bottom: 0.85rem; font-weight: 800; color: var(--heading-color);">
+      Ready to start trading skills with fellow learners?
+    </h2>
+    <p style="color: var(--body-text); max-width: 580px; margin: 0 auto 2rem; font-size: 1.05rem;">
+      Create your profile in 60 seconds, list what you know, and unlock your first reciprocal matches.
+    </p>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      {% if g.user %}
+        <a href="{{ url_for('main.matches') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-wand-magic-sparkles"></i> Find Partners Now
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg btn-glow">
+          <i class="fas fa-user-plus"></i> Join SkillSwap Free
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">
+          <i class="fas fa-right-to-bracket"></i> Sign In
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

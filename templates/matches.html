@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Find Partners | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 3.5rem;">
+  <!-- Header Title -->
+  <div style="margin-bottom: 2.25rem;">
+    <div class="perfect-match-badge" style="margin-bottom: 0.65rem;">
+      <i class="fas fa-wand-magic-sparkles"></i> Reciprocal Matching Engine
+    </div>
+    <h1 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -0.03em;">Find Learning Partners</h1>
+    <p style="color: var(--body-text); font-size: 1rem; max-width: 720px; line-height: 1.65;">
+      Our engine analyzes your teaching abilities against peer learning wishlists, pairing you into two-way reciprocal partnerships.
+    </p>
+  </div>
+
+  {% if not is_logged_in %}
+    <div class="card match-card-perfect" style="text-align: center; padding: 3.5rem 1.5rem;">
+      <div class="step-icon" style="width: 54px; height: 54px; font-size: 1.5rem; margin: 0 auto 1.25rem; background: var(--champagne-gold-subtle); border: 1px solid var(--champagne-gold-border); color: var(--champagne-gold); border-radius: 50%;">
+        <i class="fas fa-wand-magic-sparkles"></i>
+      </div>
+      <h2 style="font-size: clamp(1.4rem, 2.5vw, 1.9rem); margin-bottom: 0.75rem; font-weight: 800;">Unlock Your Personal Skill Matches</h2>
+      <p style="color: var(--body-text); max-width: 580px; margin: 0 auto 2rem; font-size: 0.98rem; line-height: 1.65;">
+        Log in or create a student profile to allow our algorithm to automatically match your teaching abilities with other students' learning desires.
+      </p>
+      <div style="display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-right-to-bracket"></i> Sign In to View Matches
+        </a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-lg">
+          <i class="fas fa-user-plus"></i> Join Free
+        </a>
+      </div>
+    </div>
+  {% elif not has_skills %}
+    <div class="card" style="text-align: center; padding: 3.5rem 1.5rem;">
+      <div class="step-icon" style="width: 54px; height: 54px; font-size: 1.5rem; margin: 0 auto 1.25rem; background: var(--champagne-gold-subtle); border: 1px solid var(--champagne-gold-border); color: var(--champagne-gold); border-radius: 50%;">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <h2 style="font-size: clamp(1.4rem, 2.5vw, 1.9rem); margin-bottom: 0.75rem; font-weight: 800;">Add Skills to Unlock Matching</h2>
+      <p style="color: var(--body-text); max-width: 560px; margin: 0 auto 2rem; font-size: 0.98rem; line-height: 1.65;">
+        To calculate reciprocal matches, our engine needs to know at least one skill you can teach and one skill you want to learn.
+      </p>
+      <a href="{{ url_for('skills.manage_skills') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus"></i> Add My Skills Now
+      </a>
+    </div>
+  {% else %}
+
+    <!-- 1. Perfect Mutual Matches (Reciprocal 100%) -->
+    <div style="margin-bottom: 3.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <i class="fas fa-gem" style="color: var(--champagne-gold); font-size: 1.35rem;"></i>
+        <h2 style="font-size: clamp(1.3rem, 2.5vw, 1.65rem); font-weight: 800;">
+          Perfect Mutual Matches (Reciprocal)
+        </h2>
+        <span class="badge-counter" style="font-weight: 700; font-size: 0.8rem; padding: 0.15rem 0.6rem;">
+          {{ perfect_matches|length }}
+        </span>
+      </div>
+
+      {% if perfect_matches %}
+        <div class="grid-cards-auto">
+          {% for match in perfect_matches %}
+            <div class="card match-card-perfect" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem;">
+              <div>
+                <!-- Top Info -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.15rem; gap: 0.5rem;">
+                  <a href="{{ url_for('auth.user_detail', user_id=match.user.id) }}" style="display: flex; align-items: center; gap: 0.65rem; text-decoration: none; min-width: 0;">
+                    <div class="avatar-mini" style="width: 40px; height: 40px; font-size: 1.05rem;">
+                      {{ match.user.full_name[0] }}
+                    </div>
+                    <div style="min-width: 0;">
+                      <div style="font-weight: 700; color: var(--heading-color); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.user.full_name }}</div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.user.location }}</div>
+                    </div>
+                  </a>
+                  <div class="compatibility-meter" style="flex-shrink: 0;">
+                    <i class="fas fa-bolt"></i> {{ match.compatibility }}% Match
+                  </div>
+                </div>
+
+                <!-- Reciprocal Details Breakdown -->
+                <div style="background: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.15rem; border: 1px solid var(--border-color);">
+                  <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--champagne-gold); font-weight: 700; margin-bottom: 0.35rem; letter-spacing: 0.04em;">
+                      <i class="fas fa-hand-holding-hand"></i> They Can Teach You:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                      {% for s in match.can_teach_me %}
+                        <span class="skill-tag skill-tag-teach">
+                          <i class="fas fa-check"></i> {{ s.skill_name }} ({{ s.proficiency }})
+                        </span>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 0.35rem; letter-spacing: 0.04em;">
+                      <i class="fas fa-share-nodes"></i> You Can Teach Them:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                      {% for s in match.i_can_teach %}
+                        <span class="skill-tag skill-tag-learn">
+                          <i class="fas fa-check"></i> {{ s.skill_name }} ({{ s.proficiency }})
+                        </span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action -->
+              <div style="display: flex; gap: 0.65rem; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.user_detail', user_id=match.user.id) }}" class="btn btn-secondary btn-sm" style="flex: 1; min-width: 90px;">
+                  Profile
+                </a>
+                <button type="button" class="btn btn-primary btn-sm" style="flex: 1.4; min-width: 120px;" onclick="openSwapModal({{ match.user.id }}, '{{ match.user.full_name }}', {{ match.can_teach_me[0].id }})">
+                  <i class="fas fa-bolt"></i> Instant Swap
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="padding: 2.25rem 1.5rem; text-align: center; color: var(--text-muted);">
+          <i class="fas fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 0.85rem; color: var(--text-subtle);"></i>
+          <p>No 100% reciprocal matches found yet. Add more skills you can teach or want to learn to increase match opportunities!</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 2. One-Way Learning Opportunities -->
+    <div style="margin-bottom: 3.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <i class="fas fa-graduation-cap" style="color: var(--champagne-gold); font-size: 1.35rem;"></i>
+        <h2 style="font-size: clamp(1.3rem, 2.5vw, 1.65rem); font-weight: 800;">
+          Peers Teaching Skills You Want
+        </h2>
+        <span class="badge-counter">
+          {{ learn_opportunities|length }}
+        </span>
+      </div>
+
+      {% if learn_opportunities %}
+        <div class="grid-cards-auto">
+          {% for item in learn_opportunities %}
+            <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.15rem; gap: 0.5rem;">
+                  <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" style="display: flex; align-items: center; gap: 0.65rem; text-decoration: none; min-width: 0;">
+                    <div class="avatar-mini" style="width: 38px; height: 38px;">
+                      {{ item.user.full_name[0] }}
+                    </div>
+                    <div style="min-width: 0;">
+                      <div style="font-weight: 700; color: var(--heading-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.full_name }}</div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.location }}</div>
+                    </div>
+                  </a>
+                  <div class="rating-stars" style="font-size: 0.85rem; flex-shrink: 0;">
+                    <i class="fas fa-star"></i> {{ item.user.average_rating }}
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 1.15rem;">
+                  <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 700; letter-spacing: 0.04em;">Offers to teach:</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                    {% for s in item.can_teach_me %}
+                      <span class="skill-tag skill-tag-teach">{{ s.skill_name }} ({{ s.proficiency }})</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.65rem; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" class="btn btn-secondary btn-sm" style="flex: 1; min-width: 90px;">View Profile</a>
+                <button type="button" class="btn btn-primary btn-sm" style="flex: 1.2; min-width: 110px;" onclick="openSwapModal({{ item.user.id }}, '{{ item.user.full_name }}', {{ item.can_teach_me[0].id }})">
+                  <i class="fas fa-repeat"></i> Propose Swap
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="padding: 2.25rem 1.5rem; text-align: center; color: var(--text-muted);">
+          <p>No peers found teaching your requested skills right now.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 3. One-Way Teaching Opportunities -->
+    <div style="margin-bottom: 3.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <i class="fas fa-chalkboard-user" style="color: var(--champagne-gold); font-size: 1.35rem;"></i>
+        <h2 style="font-size: clamp(1.3rem, 2.5vw, 1.65rem); font-weight: 800;">
+          Peers Eager to Learn What You Teach
+        </h2>
+        <span class="badge-counter">
+          {{ teach_opportunities|length }}
+        </span>
+      </div>
+
+      {% if teach_opportunities %}
+        <div class="grid-cards-auto">
+          {% for item in teach_opportunities %}
+            <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.15rem; gap: 0.5rem;">
+                  <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" style="display: flex; align-items: center; gap: 0.65rem; text-decoration: none; min-width: 0;">
+                    <div class="avatar-mini" style="width: 38px; height: 38px;">
+                      {{ item.user.full_name[0] }}
+                    </div>
+                    <div style="min-width: 0;">
+                      <div style="font-weight: 700; color: var(--heading-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.full_name }}</div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.location }}</div>
+                    </div>
+                  </a>
+                  <div class="rating-stars" style="font-size: 0.85rem; flex-shrink: 0;">
+                    <i class="fas fa-star"></i> {{ item.user.average_rating }}
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 1.15rem;">
+                  <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 700; letter-spacing: 0.04em;">Wants your skill:</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                    {% for s in item.i_can_teach %}
+                      <span class="skill-tag skill-tag-learn">{{ s.skill_name }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.65rem; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" class="btn btn-secondary btn-sm" style="flex: 1; min-width: 90px;">View Profile</a>
+                <button type="button" class="btn btn-primary btn-sm" style="flex: 1.2; min-width: 110px;" onclick="openSwapModal({{ item.user.id }}, '{{ item.user.full_name }}', null)">
+                  <i class="fas fa-handshake"></i> Offer Mentorship
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="padding: 2.25rem 1.5rem; text-align: center; color: var(--text-muted);">
+          <p>No peers currently seeking the skills in your teaching portfolio.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  {% endif %}
+</div>
+
+<!-- Modal: Send Skill Swap Proposal -->
+{% if g.user %}
+<div id="swapProposalModal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--heading-color);">Propose Skill Swap</h3>
+      <button type="button" class="alert-close" onclick="closeModal('swapProposalModal')">&times;</button>
+    </div>
+
+    <form id="swapProposalForm" method="POST" action="">
+      <p style="font-size: 0.92rem; color: var(--body-text); margin-bottom: 1.25rem; line-height: 1.6;">
+        Propose a reciprocal skill exchange with <strong id="modalPartnerName" style="color: var(--heading-color);"></strong>:
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Which skill will YOU teach them? *</label>
+        <select name="offered_skill_id" class="form-select" required>
+          {% for my_skill in g.user.skills_offered.all() %}
+            <option value="{{ my_skill.id }}">{{ my_skill.skill_name }} ({{ my_skill.proficiency }})</option>
+          {% else %}
+            <option value="" disabled selected>You haven't added any offered skills yet!</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <input type="hidden" name="requested_skill_id" id="modalRequestedSkillId" value="">
+
+      <div class="form-group">
+        <label class="form-label">Proposal Message / Goals *</label>
+        <textarea name="message" class="form-control" rows="3" placeholder="Hi! I would love to exchange learning sessions. Here is what we can learn together..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Proposed Schedule / Availability</label>
+        <input type="text" name="schedule_note" class="form-control" placeholder="e.g. Saturdays 3-5 PM in College Lab">
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('swapProposalModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" {% if g.user.skills_offered.count() == 0 %}disabled{% endif %}>
+          <i class="fas fa-paper-plane"></i> Send Proposal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openSwapModal(userId, userName, skillId) {
+    document.getElementById('modalPartnerName').innerText = userName;
+    document.getElementById('swapProposalForm').action = '/swaps/request/' + userId;
+    document.getElementById('modalRequestedSkillId').value = skillId || '';
+    openModal('swapProposalModal');
+  }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage My Skills | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <div class="section-pill" style="margin-bottom: 0.5rem;">Portfolio</div>
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;">Manage My Skills</h1>
+    <p style="color: var(--body-text); font-size: 1.02rem; margin-top: 0.35rem;">
+      Keep your teaching offerings and learning wishlists up-to-date to get the best mutual matches
+    </p>
+  </div>
+
+  <div class="tabs-wrapper">
+    <div class="nav-tabs">
+      <button type="button" class="tab-btn active" data-target="offeredTab">
+        <i class="fas fa-chalkboard-user"></i> Skills I Can Teach ({{ offered|length }})
+      </button>
+      <button type="button" class="tab-btn" data-target="wantedTab">
+        <i class="fas fa-book-open-reader"></i> Skills I Want to Learn ({{ wanted|length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: OFFERED SKILLS -->
+    <div id="offeredTab" class="tab-pane">
+      <div class="grid-split-2">
+        <!-- Add Offered Skill Form -->
+        <div class="card" style="padding: 1.75rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--heading-color); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-plus-circle" style="color: var(--champagne-gold);"></i> Add Skill to Teach
+          </h3>
+          <form method="POST" action="{{ url_for('skills.add_offered_skill') }}">
+            <div class="form-group">
+              <label class="form-label">Skill Name *</label>
+              <input type="text" name="skill_name" class="form-control" placeholder="e.g. Python Programming" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select name="category_id" class="form-select" required>
+                <option value="" disabled selected>Select a category</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Proficiency Level</label>
+              <select name="proficiency" class="form-select">
+                <option value="Beginner">Beginner (Basic knowledge)</option>
+                <option value="Intermediate" selected>Intermediate (Solid experience)</option>
+                <option value="Advanced">Advanced (Extensive project experience)</option>
+                <option value="Expert">Expert (Mastery / Professional)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Brief Description of what you can teach</label>
+              <textarea name="description" class="form-control" rows="3" placeholder="What concepts, tools, or projects can you help your peer learn?"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+              <i class="fas fa-plus"></i> Add Offered Skill
+            </button>
+          </form>
+        </div>
+
+        <!-- List of Offered Skills -->
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--heading-color);">Your Current Teaching Portfolio</h3>
+          {% if offered %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              {% for s in offered %}
+                <div class="card card-hover" style="padding: 1.35rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.35rem;">
+                      <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--heading-color);">{{ s.skill_name }}</h4>
+                      <span class="level-badge level-{{ s.proficiency|lower }}">{{ s.proficiency }}</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--champagne-gold); margin-bottom: 0.5rem; font-weight: 600;">
+                      <i class="fas {{ s.category.icon }}"></i> {{ s.category.name }}
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--body-text); line-height: 1.6;">
+                      {{ s.description or 'No specific description provided.' }}
+                    </p>
+                  </div>
+
+                  <form method="POST" action="{{ url_for('skills.delete_offered_skill', skill_id=s.id) }}" onsubmit="return confirm('Remove this skill from your offered portfolio?');" style="flex-shrink: 0;">
+                    <button type="submit" class="btn btn-outline btn-icon-only btn-sm" style="color: #EF4444;" title="Delete skill">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+              <i class="fas fa-folder-open" style="font-size: 2.75rem; margin-bottom: 1.25rem; color: var(--text-muted);"></i>
+              <h4 style="font-size: 1.2rem; color: var(--heading-color); margin-bottom: 0.5rem;">No Teaching Skills Added Yet</h4>
+              <p>Add skills on the left to start matching with peers who want to learn from you!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: WANTED SKILLS -->
+    <div id="wantedTab" class="tab-pane" style="display: none;">
+      <div class="grid-split-2">
+        <!-- Add Wanted Skill Form -->
+        <div class="card" style="padding: 1.75rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--heading-color); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-plus-circle" style="color: var(--champagne-gold);"></i> Add Skill to Learn
+          </h3>
+          <form method="POST" action="{{ url_for('skills.add_wanted_skill') }}">
+            <div class="form-group">
+              <label class="form-label">Skill Name *</label>
+              <input type="text" name="skill_name" class="form-control" placeholder="e.g. Figma UI/UX Design" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select name="category_id" class="form-select" required>
+                <option value="" disabled selected>Select a category</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Target Goal Level</label>
+              <select name="target_level" class="form-select">
+                <option value="Beginner" selected>Beginner (Curious / Foundations)</option>
+                <option value="Intermediate">Intermediate (Project building)</option>
+                <option value="Advanced">Advanced (Interview / Production grade)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Learning Goals / Notes</label>
+              <textarea name="description" class="form-control" rows="3" placeholder="What specific projects or topics are you excited to master?"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+              <i class="fas fa-plus"></i> Add to Wishlist
+            </button>
+          </form>
+        </div>
+
+        <!-- List of Wanted Skills -->
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--heading-color);">Your Learning Wishlist</h3>
+          {% if wanted %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              {% for s in wanted %}
+                <div class="card card-hover" style="padding: 1.35rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.35rem;">
+                      <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--heading-color);">{{ s.skill_name }}</h4>
+                      <span class="level-badge level-{{ s.target_level|lower }}">Target: {{ s.target_level }}</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--champagne-gold); margin-bottom: 0.5rem; font-weight: 600;">
+                      <i class="fas {{ s.category.icon }}"></i> {{ s.category.name }}
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--body-text); line-height: 1.6;">
+                      {{ s.description or 'Looking for mentorship and hands-on learning guidance.' }}
+                    </p>
+                  </div>
+
+                  <form method="POST" action="{{ url_for('skills.delete_wanted_skill', skill_id=s.id) }}" onsubmit="return confirm('Remove this skill from your learning wishlist?');" style="flex-shrink: 0;">
+                    <button type="submit" class="btn btn-outline btn-icon-only btn-sm" style="color: #EF4444;" title="Delete skill">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="card" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+              <i class="fas fa-lightbulb" style="font-size: 2.75rem; margin-bottom: 1.25rem; color: var(--text-muted);"></i>
+              <h4 style="font-size: 1.2rem; color: var(--heading-color); margin-bottom: 0.5rem;">Your Wishlist is Empty</h4>
+              <p>Add skills on the left that you want to learn to get reciprocal matches!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

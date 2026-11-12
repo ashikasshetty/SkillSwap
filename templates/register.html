@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: clamp(1.5rem, 4vw, 3rem) auto;">
+  <div class="card" style="padding: clamp(1.25rem, 4vw, 2.25rem); border-color: var(--champagne-gold-border); box-shadow: var(--shadow-md);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="brand-icon" style="margin: 0 auto 1.25rem; width: 48px; height: 48px; font-size: 1.25rem;">
+        <i class="fas fa-user-plus" style="color: var(--champagne-gold);"></i>
+      </div>
+      <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.025em; color: var(--heading-color);">Join SkillSwap</h1>
+      <p style="color: var(--body-text); font-size: 0.94rem; margin-top: 0.35rem;">
+        Start exchanging knowledge and collaborating with peer learners
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="form-group">
+        <label class="form-label" for="reg-fullname">Full Name *</label>
+        <input type="text" class="form-control" id="reg-fullname" name="full_name" placeholder="e.g. Ashika Shetty" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-email">Email Address *</label>
+        <input type="email" class="form-control" id="reg-email" name="email" placeholder="e.g. ashika@example.com" required>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password *</label>
+          <input type="password" class="form-control" id="reg-password" name="password" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-confirmpass">Confirm Password *</label>
+          <input type="password" class="form-control" id="reg-confirmpass" name="confirm_password" placeholder="••••••••" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-location">College / Campus Location</label>
+        <input type="text" class="form-control" id="reg-location" name="location" value="St Agnes College (Autonomous), Mangaluru">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-bio">Short Bio / Interests</label>
+        <textarea class="form-control" id="reg-bio" name="bio" rows="2" placeholder="Tell peers about your interests, major, and what you love to learn..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" id="register-submit-btn" style="width: 100%; margin-top: 1.25rem;">
+        <i class="fas fa-rocket"></i> Create Free Account
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.92rem; color: var(--text-muted);">
+      Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--champagne-gold); font-weight: 700;">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

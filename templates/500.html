@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}500 - Server Error | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 5rem 1rem;">
+  <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 5rem; font-weight: 800; color: #EF4444; line-height: 1;">500</div>
+  <h1 style="font-size: 2rem; margin: 1rem 0 0.5rem; color: var(--heading-color);">Internal Server Error</h1>
+  <p style="color: var(--body-text); max-width: 480px; margin: 0 auto 2rem; font-size: 1rem;">
+    Something unexpected happened on our server. Please try again in a moment.
+  </p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">
+    <i class="fas fa-house"></i> Back to Homepage
+  </a>
+</div>
+{% endblock %}

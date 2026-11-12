@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SkillSwap - Reciprocal Peer-to-Peer Collaborative Skill Exchange Platform for MCA Students">
+  <title>{% block title %}SkillSwap - Collaborative Learning Platform{% endblock %}</title>
+
+  <!-- Prevent Theme Flash -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('skillswap-theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans (Headings) & Inter (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <div class="nav-wrapper">
+    <nav class="navbar" id="mainNavbar">
+      <div class="container nav-container">
+        <!-- Brand -->
+        <a href="{{ url_for('main.index') }}" class="brand" id="navBrand">
+          <div class="brand-icon">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="SkillSwap Logo">
+          </div>
+          <span class="brand-name">Skill<span class="brand-accent">Swap</span></span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" id="navHome">
+              <i class="fas fa-house"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.explore') }}" class="nav-link {% if request.endpoint == 'main.explore' %}active{% endif %}" id="navExplore">
+              <i class="fas fa-compass"></i>
+              <span>Explore Skills</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.matches') }}" class="nav-link {% if request.endpoint == 'main.matches' %}active{% endif %}" id="navMatches">
+              <i class="fas fa-wand-magic-sparkles"></i>
+              <span>Find Partners</span>
+              <span class="badge-pill-gold">Smart</span>
+            </a>
+          </li>
+
+          {% if g.user %}
+            <li>
+              <a href="{{ url_for('swaps.list_swaps') }}" class="nav-link {% if request.endpoint == 'swaps.list_swaps' %}active{% endif %}" id="navSwaps">
+                <i class="fas fa-handshake"></i>
+                <span>Dashboard</span>
+                {% if nav_pending_swaps > 0 %}
+                  <span class="badge-counter" id="navPendingBadge">{{ nav_pending_swaps }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('skills.manage_skills') }}" class="nav-link {% if request.endpoint == 'skills.manage_skills' %}active{% endif %}" id="navMySkills">
+                <i class="fas fa-layer-group"></i>
+                <span>My Skills</span>
+              </a>
+            </li>
+            {% if g.user.is_admin %}
+              <li>
+                <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}" id="navAdmin">
+                  <i class="fas fa-shield-halved" style="color: #EF4444;"></i>
+                  <span>Admin</span>
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+
+        <!-- Navigation Actions (Theme Toggle & Auth Controls) -->
+        <div class="nav-actions">
+          <!-- Dark / Light Mode Toggle Button -->
+          <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Dark and Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+
+          {% if g.user %}
+            <a href="{{ url_for('auth.profile') }}" class="user-menu-btn" id="navUserProfile" title="View Profile">
+              <div class="avatar-mini">
+                {{ g.user.full_name[0] }}
+              </div>
+              <span class="user-name-label">{{ g.user.full_name.split()[0] }}</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-icon-only btn-sm" id="navLogoutBtn" title="Log Out">
+              <i class="fas fa-arrow-right-from-bracket"></i>
+            </a>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" id="navLoginBtn">
+              <i class="fas fa-right-to-bracket"></i> Log In
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm btn-glow" id="navRegisterBtn">
+              <i class="fas fa-user-plus"></i> Join Free
+            </a>
+          {% endif %}
+
+          <!-- Mobile Hamburger Toggle -->
+          <button type="button" class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Toggle Navigation Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Flash Toast Notifications -->
+  <div class="container flash-container" id="toastContainer">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            <div class="alert-content">
+              {% if category == 'success' %}
+                <i class="fas fa-circle-check"></i>
+              {% elif category == 'danger' %}
+                <i class="fas fa-circle-exclamation"></i>
+              {% elif category == 'warning' %}
+                <i class="fas fa-triangle-exclamation"></i>
+              {% else %}
+                <i class="fas fa-circle-info"></i>
+              {% endif %}
+              <span>{{ message }}</span>
+            </div>
+            <button type="button" class="alert-close" aria-label="Close">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Viewport -->
+  <main class="container main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Professional Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="project-credit">
+        <div class="credit-header">
+          <div class="credit-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <span class="credit-brand">SkillSwap &bull; MCA Mini Project <span>(24MCAS356)</span></span>
+        </div>
+        <p class="credit-names">
+          Designed &amp; Developed by <strong>Ashika Shetty</strong> (Reg: 2584106) &amp; <strong>Ganavi K.H</strong> (Reg: 2584125)
+        </p>
+        <p class="credit-college">
+          St Agnes College (Autonomous), PG Department of Computer Applications (MCA) &bull; II MCA "A"
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <span class="footer-col-title">Navigation</span>
+          <a href="{{ url_for('main.index') }}">Home</a>
+          <a href="{{ url_for('main.explore') }}">Explore Skills</a>
+          <a href="{{ url_for('main.matches') }}">Find Partners</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Platform</span>
+          {% if g.user %}
+            <a href="{{ url_for('swaps.list_swaps') }}">Dashboard</a>
+            <a href="{{ url_for('skills.manage_skills') }}">My Skills</a>
+            <a href="{{ url_for('auth.profile') }}">Profile</a>
+            {% if g.user.is_admin %}
+              <a href="{{ url_for('admin.dashboard') }}" class="admin-link">Admin Portal</a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('auth.login') }}">Log In</a>
+            <a href="{{ url_for('auth.register') }}">Create Account</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <span>&copy; 2026 SkillSwap Platform. Built for reciprocal knowledge exchange.</span>
+        <span class="tech-badge"><i class="fab fa-python" style="color: var(--champagne-gold);"></i> Python 3.14 &bull; Flask &bull; Modern Startup UI</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Client-Side Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management | Admin Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--champagne-gold); display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; font-weight: 600;">
+        <i class="fas fa-arrow-left"></i> Back to Admin Dashboard
+      </a>
+      <h1 style="font-size: 2.2rem; font-weight: 800;">User Moderation &amp; Management</h1>
+      <p style="color: var(--body-text); font-size: 0.95rem;">View and manage registered learners, grant admin privileges, or suspend accounts</p>
+    </div>
+
+    <!-- Search Box -->
+    <form method="GET" action="{{ url_for('admin.users') }}" style="display: flex; gap: 0.5rem; flex: 1; min-width: 200px; max-width: 340px;">
+      <input type="text" name="q" value="{{ q or '' }}" class="form-control" placeholder="Search by name or email..." style="flex: 1; min-width: 0;">
+      <button type="submit" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">
+        <i class="fas fa-magnifying-glass"></i>
+      </button>
+    </form>
+  </div>
+
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Learner</th>
+          <th>Location / College</th>
+          <th>Role</th>
+          <th>Offered / Wanted</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="avatar-mini">{{ u.full_name[0] }}</div>
+                <div>
+                  <a href="{{ url_for('auth.user_detail', user_id=u.id) }}" style="font-weight: 700; color: var(--heading-color); text-decoration: none;">
+                    {{ u.full_name }}
+                  </a>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size: 0.88rem; color: var(--body-text);">
+              {{ u.location }}
+            </td>
+            <td>
+              <span class="level-badge {% if u.role == 'admin' %}level-expert{% else %}level-intermediate{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td style="font-size: 0.88rem;">
+              <span style="color: var(--champagne-gold); font-weight: 600;">{{ u.skills_offered.count() }} teach</span> / 
+              <span style="color: var(--text-muted); font-weight: 600;">{{ u.skills_wanted.count() }} learn</span>
+            </td>
+            <td>
+              <span class="status-dot {% if u.is_active %}status-active{% else %}status-inactive{% endif %}"></span>
+              <span style="font-size: 0.88rem;">{{ 'Active' if u.is_active else 'Deactivated' }}</span>
+            </td>
+            <td>
+              {% if u.email != 'admin@skillswap.com' %}
+                <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" style="display: inline;">
+                  <button type="submit" class="btn btn-outline btn-sm" style="{% if u.is_active %}color: #EF4444; border-color: rgba(239, 68, 68, 0.35);{% else %}color: #10B981; border-color: rgba(16, 185, 129, 0.35);{% endif %}">
+                    {% if u.is_active %}
+                      <i class="fas fa-ban"></i> Deactivate
+                    {% else %}
+                      <i class="fas fa-check"></i> Activate
+                    {% endif %}
+                  </button>
+                </form>
+              {% else %}
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Root Admin</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Review for {{ reviewee.full_name }} | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: clamp(1.5rem, 4vw, 3rem) auto;">
+  <div class="card" style="padding: clamp(1.25rem, 4vw, 2.25rem); border-color: var(--champagne-gold-border);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="step-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.25rem; border-radius: 50%;">
+        <i class="fas fa-star"></i>
+      </div>
+      <h1 style="font-size: 1.75rem; font-weight: 700;">Rate Your Skill Exchange</h1>
+      <p style="color: var(--body-text); font-size: 0.92rem; margin-top: 0.35rem;">
+        How was your peer-learning experience with <strong>{{ reviewee.full_name }}</strong>?
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('reviews.add_review', swap_id=swap.id) }}">
+      <!-- Star Rating Selector -->
+      <div class="form-group" style="text-align: center; margin-bottom: 2rem;">
+        <label class="form-label" style="margin-bottom: 0.75rem;">Your Rating (1 to 5 Stars)</label>
+        <input type="hidden" name="rating" id="selected-rating-value" value="5">
+        
+        <div style="display: flex; justify-content: center; gap: 0.75rem; font-size: 1.85rem; color: var(--champagne-gold);">
+          <button type="button" class="rating-star-btn active" data-value="1" style="background: none; border: none; cursor: pointer; color: inherit; font-size: inherit;">
+            <i class="fas fa-star"></i>
+          </button>
+          <button type="button" class="rating-star-btn active" data-value="2" style="background: none; border: none; cursor: pointer; color: inherit; font-size: inherit;">
+            <i class="fas fa-star"></i>
+          </button>
+          <button type="button" class="rating-star-btn active" data-value="3" style="background: none; border: none; cursor: pointer; color: inherit; font-size: inherit;">
+            <i class="fas fa-star"></i>
+          </button>
+          <button type="button" class="rating-star-btn active" data-value="4" style="background: none; border: none; cursor: pointer; color: inherit; font-size: inherit;">
+            <i class="fas fa-star"></i>
+          </button>
+          <button type="button" class="rating-star-btn active" data-value="5" style="background: none; border: none; cursor: pointer; color: inherit; font-size: inherit;">
+            <i class="fas fa-star"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="review-comment">Written Feedback / Testimonial</label>
+        <textarea name="comment" id="review-comment" class="form-control" rows="4" placeholder="Share how helpful they were, what you learned, and their teaching style..." required></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+        <a href="{{ url_for('swaps.list_swaps') }}" class="btn btn-secondary" style="flex: 1;">
+          Later
+        </a>
+        <button type="submit" class="btn btn-primary" style="flex: 2;">
+          <i class="fas fa-check"></i> Submit Review
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

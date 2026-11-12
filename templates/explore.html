@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Skills | SkillSwap{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 3.5rem;">
+  <!-- Header Title -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <div class="section-pill" style="margin-bottom: 0.5rem;">Directory</div>
+      <h1 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -0.03em;">Explore Skills Directory</h1>
+      <p style="color: var(--body-text); font-size: 1rem; margin-top: 0.35rem;">Discover talented student peers to learn from or share your expertise with</p>
+    </div>
+    {% if g.user %}
+      <a href="{{ url_for('skills.manage_skills') }}" class="btn btn-primary btn-sm btn-glow">
+        <i class="fas fa-plus"></i> Add to My Skills
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <form method="GET" action="{{ url_for('main.explore') }}" class="card" style="padding: 1.25rem 1.5rem; margin-bottom: 2.25rem;">
+    <div class="grid-filter-bar">
+      <!-- Search text -->
+      <div style="position: relative;">
+        <input type="text" name="q" value="{{ q or '' }}" class="form-control" placeholder="Search by skill name, topic, or peer..." style="padding-left: 2.6rem;">
+        <i class="fas fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;"></i>
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <select name="category" class="form-select" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if selected_cat == cat.id %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Type Filter -->
+      <div>
+        <select name="type" class="form-select" onchange="this.form.submit()">
+          <option value="offered" {% if filter_type == 'offered' %}selected{% endif %}>Skills Offered (Teaching)</option>
+          <option value="wanted" {% if filter_type == 'wanted' %}selected{% endif %}>Skills Wanted (Learning)</option>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-secondary" style="height: 100%; min-height: 40px; padding: 0.6rem 1.4rem;">
+        <i class="fas fa-filter"></i> Filter
+      </button>
+    </div>
+
+    <!-- Category Pills Quick Bar -->
+    <div style="padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border-color);">
+      <div class="pills-scroll-bar">
+        <a href="{{ url_for('main.explore', type=filter_type) }}" class="btn btn-sm {% if not selected_cat %}btn-primary{% else %}btn-secondary{% endif %}" style="white-space: nowrap;">
+          All Categories
+        </a>
+        {% for cat in categories %}
+          <a href="{{ url_for('main.explore', category=cat.id, type=filter_type) }}" class="btn btn-sm {% if selected_cat == cat.id %}btn-primary{% else %}btn-secondary{% endif %}" style="white-space: nowrap;">
+            <i class="fas {{ cat.icon }}" style="font-size: 0.8rem;"></i> {{ cat.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </form>
+
+  <!-- Skills Listing Grid -->
+  {% if items %}
+    <div class="grid-cards-auto">
+      {% for item in items %}
+        <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <!-- Card Header: User and Rating -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.15rem; gap: 0.5rem;">
+              <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" style="display: flex; align-items: center; gap: 0.65rem; text-decoration: none; min-width: 0;">
+                <div class="avatar-mini" style="width: 38px; height: 38px; font-size: 1rem;">
+                  {{ item.user.full_name[0] }}
+                </div>
+                <div style="min-width: 0;">
+                  <div style="font-weight: 700; color: var(--heading-color); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.full_name }}</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.user.location }}</div>
+                </div>
+              </a>
+              <div class="rating-stars" style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0;">
+                <i class="fas fa-star"></i>
+                <span style="font-weight: 700; font-size: 0.88rem; color: var(--heading-color);">{{ item.user.average_rating }}</span>
+              </div>
+            </div>
+
+            <!-- Skill Title & Category -->
+            <div style="margin-bottom: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.35rem;">
+                <span style="font-size: 0.74rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.04em;">
+                  <i class="fas {{ item.category.icon }}" style="color: var(--champagne-gold);"></i> {{ item.category.name }}
+                </span>
+                <span class="level-badge level-{{ item.proficiency|lower if filter_type == 'offered' else item.target_level|lower }}">
+                  {{ item.proficiency if filter_type == 'offered' else item.target_level }}
+                </span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--heading-color);">{{ item.skill_name }}</h3>
+            </div>
+
+            <!-- Description -->
+            <p style="font-size: 0.9rem; color: var(--body-text); margin-bottom: 1.25rem; line-height: 1.6;">
+              {{ item.description or 'Ready to collaborate and exchange knowledge with fellow learners!' }}
+            </p>
+          </div>
+
+          <!-- Card Footer Actions -->
+          <div style="display: flex; gap: 0.65rem; border-top: 1px solid var(--border-color); padding-top: 1.15rem; flex-wrap: wrap;">
+            <a href="{{ url_for('auth.user_detail', user_id=item.user.id) }}" class="btn btn-secondary btn-sm" style="flex: 1; min-width: 100px;">
+              View Profile
+            </a>
+            {% if g.user and g.user.id != item.user.id %}
+              <button type="button" class="btn btn-primary btn-sm" style="flex: 1.3; min-width: 120px;" onclick="openSwapModal({{ item.user.id }}, '{{ item.user.full_name }}', {{ item.id if filter_type == 'offered' else 'null' }})">
+                <i class="fas fa-repeat"></i> Request Swap
+              </button>
+            {% elif not g.user %}
+              <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm" style="flex: 1.3; min-width: 120px;">
+                Log in to Swap
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 4rem 1.5rem;">
+      <i class="fas fa-magnifying-glass" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 1.25rem;"></i>
+      <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">No skills found matching your query</h3>
+      <p style="color: var(--body-text); font-size: 0.95rem; margin-bottom: 1.5rem;">
+        Try resetting your filters or search for another keyword like "Python", "Photography", or "UI/UX".
+      </p>
+      <a href="{{ url_for('main.explore') }}" class="btn btn-secondary">
+        Reset Search Filters
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Modal: Send Skill Swap Proposal -->
+{% if g.user %}
+<div id="swapProposalModal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--heading-color);">Propose Skill Swap</h3>
+      <button type="button" class="alert-close" onclick="closeModal('swapProposalModal')">&times;</button>
+    </div>
+
+    <form id="swapProposalForm" method="POST" action="">
+      <p style="font-size: 0.92rem; color: var(--body-text); margin-bottom: 1.25rem; line-height: 1.6;">
+        Propose a reciprocal skill exchange with <strong id="modalPartnerName" style="color: var(--heading-color);"></strong>:
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Which skill will YOU teach them? *</label>
+        <select name="offered_skill_id" class="form-select" required>
+          {% for my_skill in g.user.skills_offered.all() %}
+            <option value="{{ my_skill.id }}">{{ my_skill.skill_name }} ({{ my_skill.proficiency }})</option>
+          {% else %}
+            <option value="" disabled selected>You haven't added any offered skills yet!</option>
+          {% endfor %}
+        </select>
+        {% if g.user.skills_offered.count() == 0 %}
+          <small style="color: var(--champagne-gold); display: block; margin-top: 0.45rem;">
+            Please <a href="{{ url_for('skills.manage_skills') }}" style="text-decoration: underline;">add a skill you can teach</a> first!
+          </small>
+        {% endif %}
+      </div>
+
+      <input type="hidden" name="requested_skill_id" id="modalRequestedSkillId" value="">
+
+      <div class="form-group">
+        <label class="form-label">Proposal Message / Goals *</label>
+        <textarea name="message" class="form-control" rows="3" placeholder="Hi! I saw your skill and would love to exchange learning sessions. Here is what I can share..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Proposed Schedule / Availability</label>
+        <input type="text" name="schedule_note" class="form-control" placeholder="e.g. Weekends 4-6 PM or college library hours">
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('swapProposalModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" {% if g.user.skills_offered.count() == 0 %}disabled{% endif %}>
+          <i class="fas fa-paper-plane"></i> Send Proposal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openSwapModal(userId, userName, skillId) {
+    document.getElementById('modalPartnerName').innerText = userName;
+    document.getElementById('swapProposalForm').action = '/swaps/request/' + userId;
+    document.getElementById('modalRequestedSkillId').value = skillId || '';
+    openModal('swapProposalModal');
+  }
+</script>
+{% endif %}
+{% endblock %}

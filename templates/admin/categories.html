@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Skill Categories | Admin Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--champagne-gold); display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; font-weight: 600;">
+      <i class="fas fa-arrow-left"></i> Back to Admin Dashboard
+    </a>
+    <h1 style="font-size: 2.2rem; font-weight: 800;">Manage Skill Categories</h1>
+    <p style="color: var(--body-text); font-size: 0.95rem;">Organize domain classifications for easier matching and search</p>
+  </div>
+
+  <div class="grid-split-2">
+    <!-- Add Category Form -->
+    <div class="card">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem;">
+        <i class="fas fa-plus-circle" style="color: var(--champagne-gold);"></i> Add New Category
+      </h3>
+      <form method="POST" action="{{ url_for('admin.categories') }}">
+        <div class="form-group">
+          <label class="form-label">Category Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Artificial Intelligence" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">FontAwesome Icon Class</label>
+          <input type="text" name="icon" class="form-control" value="fa-book" placeholder="e.g. fa-robot, fa-music, fa-code">
+          <small style="color: var(--text-muted); display: block; margin-top: 0.35rem;">
+            Use FontAwesome 6 class names like <code>fa-code</code>, <code>fa-robot</code>, <code>fa-palette</code>
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Brief note on subtopics included..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <i class="fas fa-plus"></i> Save Category
+        </button>
+      </form>
+    </div>
+
+    <!-- Category List Table -->
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Icon &amp; Name</th>
+            <th>Description</th>
+            <th>Skills</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div class="category-icon" style="width: 34px; height: 34px; font-size: 0.95rem;">
+                    <i class="fas {{ cat.icon }}"></i>
+                  </div>
+                  <strong style="color: var(--heading-color);">{{ cat.name }}</strong>
+                </div>
+              </td>
+              <td style="font-size: 0.88rem; color: var(--body-text); max-width: 250px;">
+                {{ cat.description or '-' }}
+              </td>
+              <td style="font-size: 0.88rem; color: var(--text-muted);">
+                <span style="color: var(--champagne-gold); font-weight: 600;">{{ cat.skills_offered.count() }} teach</span> / 
+                <span style="color: var(--text-muted); font-weight: 600;">{{ cat.skills_wanted.count() }} learn</span>
+              </td>
+              <td>
+                {% if cat.skills_offered.count() == 0 and cat.skills_wanted.count() == 0 %}
+                  <form method="POST" action="{{ url_for('admin.delete_category', cat_id=cat.id) }}" onsubmit="return confirm('Delete category {{ cat.name }}?');">
+                    <button type="submit" class="btn btn-outline btn-sm" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4);">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                {% else %}
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">In Use</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
